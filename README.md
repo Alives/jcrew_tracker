@@ -10,8 +10,8 @@ Modify the shell script to match your environment and run it via cron.
 ##Sample Email
 New:
 
-[![New](http://www.eyyit.com/jcrew/jcrew_polos_cur.png)](http://www.eyyit.com/jcrew/jcrew_polos_cur.png)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![New](http://www.eyyit.com/jcrew/jcrew_polos_cur.png)](http://www.eyyit.com/jcrew/jcrew_polos_cur.png)
 
 Old:
 
-[![Old](http://www.eyyit.com/jcrew/jcrew_polos_old.png)](http://www.eyyit.com/jcrew/jcrew_polos_old.png)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Old](http://www.eyyit.com/jcrew/jcrew_polos_old.png)](http://www.eyyit.com/jcrew/jcrew_polos_old.png)

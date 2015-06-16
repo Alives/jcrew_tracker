@@ -16,10 +16,12 @@ OLD_FILE='jcrew_polos_old.png'
 
 SCRAPER="${LOCAL_DIR}/jcrew_polo_tracker_scraper.js"
 
+fping -q www.jcrew.com || exit
+
 timeout -s KILL 5m \
   casperjs ${SCRAPER} \
     --filename="${WWW_DIR}/${NEW_FILE}" \
-    --url="${JCREW_URL}" || exit
+    --url="${JCREW_URL}" >/dev/null 2>&1 || exit
 
 cur_sha1=$(sha1sum ${WWW_DIR}/${CUR_FILE} | cut -d ' ' -f 1)
 new_sha1=$(sha1sum ${WWW_DIR}/${NEW_FILE} | cut -d ' ' -f 1)

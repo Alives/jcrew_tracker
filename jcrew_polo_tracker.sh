@@ -5,7 +5,7 @@ SUBJECT="New Polos Available"
 TO="$(getent aliases elliott | awk '{print $NF}')"
 
 LOCAL_DIR=$(dirname $0)
-WWW_DIR="/var/www/www.eyyit.com/www/jcrew"
+WWW_DIR="/var/www/www.eyyit.com/jcrew"
 
 JCREW_URL='http://www.jcrew.com/mens_category/polostees/shortsleevepolos/PRDOVR~91918/91918.jsp'
 URL='http://www.eyyit.com/jcrew'

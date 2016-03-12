@@ -1,6 +1,6 @@
 #!/bin/bash
 
-/bin/ps -p $(cat /var/run/jcrew_polo_tracker.pid) >/dev/null 2>&1 && exit
+/bin/ps -p $(cat /var/run/jcrew_polo_tracker.pid 2>/dev/null) >/dev/null 2>&1 && exit
 echo $$ > /var/run/jcrew_polo_tracker.pid
 
 FROM="jcrew_polo_tracker@$(hostname -d)"

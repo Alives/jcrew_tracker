@@ -1,5 +1,8 @@
 #!/bin/bash
 
+/bin/ps -p $(cat /var/run/jcrew_polo_tracker.pid) >/dev/null 2>&1 && exit
+echo $$ > /var/run/jcrew_polo_tracker.pid
+
 FROM="jcrew_polo_tracker@$(hostname -d)"
 SUBJECT="New Polos Available"
 TO="$(getent aliases elliott | awk '{print $NF}')"
@@ -8,7 +11,7 @@ LOCAL_DIR=$(dirname $0)
 WWW_DIR="/var/www/www.eyyit.com/jcrew"
 
 JCREW_URL='http://www.jcrew.com/mens_category/polostees/shortsleevepolos/PRDOVR~91918/91918.jsp'
-URL='http://www.eyyit.com/jcrew'
+URL='https://www.eyyit.com/jcrew'
 
 CUR_FILE='jcrew_polos_cur.png'
 NEW_FILE='jcrew_polos_new.png'
@@ -67,3 +70,4 @@ EOF
   -s "${SUBJECT}" \
   "${TO}"
 fi
+/bin/rm -f /var/run/jcrew_polo_tracker.pid

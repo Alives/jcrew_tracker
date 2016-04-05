@@ -10,10 +10,11 @@ TO="$(getent aliases elliott | awk '{print $NF}')"
 LOCAL_DIR=$(dirname $0)
 JCREW_URL='http://www.jcrew.com/mens_category/polostees/shortsleevepolos/PRDOVR~91918/91918.jsp'
 NEW_FILE="jcrew_polos_$(/bin/date +%Y-%m-%d_%H:%M).png"
-OLD_FILE="$(/usr/bin/basename $(/bin/ls -1t ${WWW_DIR}/*.png | /usr/bin/head -n 1))"
 SCRAPER="${LOCAL_DIR}/scraper.js"
 URL='https://www.eyyit.com/jcrew'
 WWW_DIR="/var/www/www.eyyit.com/jcrew"
+
+OLD_FILE="$(/usr/bin/basename $(/bin/ls -1t ${WWW_DIR}/*.png | /usr/bin/head -n 1))"
 
 /usr/bin/find ${WWW_DIR} -type f -name '*.png' -mtime 14 -exec rm -f {} \;
 
@@ -27,7 +28,7 @@ timeout -s KILL 5m \
 new_sha1=$(sha1sum ${WWW_DIR}/${NEW_FILE} | cut -d ' ' -f 1)
 old_sha1=$(sha1sum ${WWW_DIR}/${OLD_FILE} | cut -d ' ' -f 1)
 
-if [[ "${new_sha1}" = "${cur_sha1}" ]]; then
+if [[ "${new_sha1}" = "${old_sha1}" ]]; then
   rm -f ${WWW_DIR}/${NEW_FILE}
   exit 0
 fi

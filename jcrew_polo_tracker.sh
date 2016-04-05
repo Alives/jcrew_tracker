@@ -8,16 +8,14 @@ SUBJECT="New Polos Available"
 TO="$(getent aliases elliott | awk '{print $NF}')"
 
 LOCAL_DIR=$(dirname $0)
+JCREW_URL='http://www.jcrew.com/mens_category/polostees/shortsleevepolos/PRDOVR~91918/91918.jsp'
+NEW_FILE="jcrew_polos_$(/bin/date +%Y-%m-%d_%H:%M).png"
+OLD_FILE="$(/usr/bin/basename $(/bin/ls -1t ${WWW_DIR}/*.png | /usr/bin/head -n 1))"
+SCRAPER="${LOCAL_DIR}/scraper.js"
+URL='https://www.eyyit.com/jcrew'
 WWW_DIR="/var/www/www.eyyit.com/jcrew"
 
-JCREW_URL='http://www.jcrew.com/mens_category/polostees/shortsleevepolos/PRDOVR~91918/91918.jsp'
-URL='https://www.eyyit.com/jcrew'
-
-CUR_FILE='jcrew_polos_cur.png'
-NEW_FILE='jcrew_polos_new.png'
-OLD_FILE='jcrew_polos_old.png'
-
-SCRAPER="${LOCAL_DIR}/jcrew_polo_tracker_scraper.js"
+/usr/bin/find ${WWW_DIR} -type f -name '*.png' -mtime 14 -exec rm -f {} \;
 
 fping -q www.jcrew.com || exit
 
@@ -26,16 +24,14 @@ timeout -s KILL 5m \
     --filename="${WWW_DIR}/${NEW_FILE}" \
     --url="${JCREW_URL}" >/dev/null 2>&1 || exit
 
-cur_sha1=$(sha1sum ${WWW_DIR}/${CUR_FILE} | cut -d ' ' -f 1)
 new_sha1=$(sha1sum ${WWW_DIR}/${NEW_FILE} | cut -d ' ' -f 1)
+old_sha1=$(sha1sum ${WWW_DIR}/${OLD_FILE} | cut -d ' ' -f 1)
 
 if [[ "${new_sha1}" = "${cur_sha1}" ]]; then
   rm -f ${WWW_DIR}/${NEW_FILE}
-else
-  rm -f ${WWW_DIR}/${OLD_FILE}
-  mv -f ${WWW_DIR}/${CUR_FILE} ${WWW_DIR}/${OLD_FILE}
-  mv -f ${WWW_DIR}/${NEW_FILE} ${WWW_DIR}/${CUR_FILE}
-  (cat << EOF
+  exit 0
+fi
+(cat << EOF
 --001a11c133c8af0b9a04e750283e
 Content-Type: text/plain; charset=ISO-8859-1
 
@@ -50,7 +46,7 @@ Content-Type: text/html; charset=ISO-8859-1
   <b>New:</b>
   <blockquote style="margin:0 0 0 40px;border:none;padding:0px">
     <a href="${JCREW_URL}">
-      <img src="${URL}/${CUR_FILE}">
+      <img src="${URL}/${NEW_FILE}">
     </a>
   </blockquote>
   <br><br>
@@ -69,5 +65,4 @@ EOF
   -a 'Content-Type: multipart/alternative; boundary=001a11c133c8af0b9a04e750283e' \
   -s "${SUBJECT}" \
   "${TO}"
-fi
 /bin/rm -f /var/run/jcrew_polo_tracker.pid

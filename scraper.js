@@ -13,6 +13,7 @@ casper.then(function () { this.wait(10000); });
 casper.then(function () { this.thenClick('div[data-size="LARGE"]'); });
 casper.then(function () { this.wait(10000); });
 casper.then(function () { this.thenClick('div[data-color="BK0001"]'); });
+casper.then(function () { this.wait(10000); });
 casper.then(function () { this.captureSelector(filename, 'div[class=price-wrapper]'); });
 
 casper.run();

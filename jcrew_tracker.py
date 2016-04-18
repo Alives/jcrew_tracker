@@ -350,19 +350,19 @@ def Main():
   logFormatter = logging.Formatter('%(levelname).1s%(asctime)s '
       '%(lineno)s]  %(message)s', datefmt='%H:%M:%S')
   rootLogger = logging.getLogger()
-  rootLogger.setLevel(logging.DEBUG)
+  rootLogger.setLevel(logging.INFO)
   fileHandler = logging.FileHandler('/var/log/jcrew_tracker.log')
   fileHandler.setFormatter(logFormatter)
   rootLogger.addHandler(fileHandler)
 
   if args.verbose:
     consoleHandler = logging.StreamHandler(sys.stdout)
-    if args.debug:
-      consoleHandler.setLevel(logging.DEBUG)
-    else:
-      consoleHandler.setLevel(logging.INFO)
+    consoleHandler.setLevel(logging.INFO)
     consoleHandler.setFormatter(logFormatter)
     rootLogger.addHandler(consoleHandler)
+  if args.debug:
+    consoleHandler.setLevel(logging.DEBUG)
+    rootLogger.setLevel(logging.DEBUG)
 
   jcrew = jcrew_tracker(args.email_from, args.email_subject, args.email_to,
       args.http_path, args.pushbullet_api_key, args.pushbullet_api_keyfile,

@@ -1,0 +1,8 @@
+/var/log/jcrew_tracker.log {
+        daily
+        missingok
+        rotate 5
+        copytruncate
+        nocompress
+        notifempty
+}

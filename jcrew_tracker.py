@@ -351,7 +351,7 @@ def Main():
       '%(lineno)s]  %(message)s', datefmt='%H:%M:%S')
   rootLogger = logging.getLogger()
   rootLogger.setLevel(logging.DEBUG)
-  fileHandler = logging.FileHandler('/var/log/jcrew_polo_tracker.log')
+  fileHandler = logging.FileHandler('/var/log/jcrew_tracker.log')
   fileHandler.setFormatter(logFormatter)
   rootLogger.addHandler(fileHandler)
 

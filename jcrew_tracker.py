@@ -1,28 +1,28 @@
 #!/usr/bin/env python
 
+import argparse
+import getpass
+import json
+import logging
+import os
+import pushbullet
+import smtplib
+import socket
+import sys
+import urllib2
+
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
-from getpass import getuser
-from pushbullet import Pushbullet
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from socket import gethostname
-
-import argparse
-import json
-import logging
-import os
-import smtplib
-import sys
-import urllib2
 
 
 class JCrewTracker(object):
   EMAIL_SUBJECT = 'J.Crew Polo Changes'
-  EMAIL_USER = '%s@%s' % (getuser(), gethostname())
+  EMAIL_USER = '%s@%s' % (getpass.getuser(), socket.gethostname())
   STATE_FILE = 'jcrew.state'
   THUMB_SIZE = 75
   URL = 'https://www.jcrew.com/mens_category/polostees/shortsleevepolos/' \
@@ -176,7 +176,7 @@ class JCrewTracker(object):
     self.SendEmail(html)
     self.GetPushbulletAPIKey()
     try:
-      pb = Pushbullet(self.pushbullet_api_key)
+      pb = pushbullet.Pushbullet(self.pushbullet_api_key)
       if self.pushbullet_api_key:
         logging.info('Sending Pushbullet alert')
         push = pb.push_link(self.msg['Subject'], self.url)

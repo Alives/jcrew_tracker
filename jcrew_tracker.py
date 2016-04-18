@@ -20,7 +20,7 @@ import sys
 import urllib2
 
 
-class jcrew_tracker(object):
+class JCrewTracker(object):
   EMAIL_SUBJECT = 'J.Crew Polo Changes'
   EMAIL_USER = '%s@%s' % (getuser(), gethostname())
   STATE_FILE = 'jcrew.state'
@@ -299,11 +299,13 @@ class jcrew_tracker(object):
         service_log_path=os.path.devnull)
     wait = WebDriverWait(driver, 10)
     driver.set_window_size(1120, 550)
-    self.GetURL(driver, wait)
-    self.GetSizes(driver)
-    self.UpdateDivs(driver)
-    colors = self.GetColors(driver, wait)
-    driver.quit()
+    try:
+      self.GetURL(driver, wait)
+      self.GetSizes(driver)
+      self.UpdateDivs(driver)
+      colors = self.GetColors(driver, wait)
+    finally:
+      driver.quit()
 
     state = self.GetState()
     changes = self.GetChanges(colors, state)
@@ -368,7 +370,7 @@ def Main():
     consoleHandler.setLevel(logging.DEBUG)
     rootLogger.setLevel(logging.DEBUG)
 
-  jcrew = jcrew_tracker(args.email_from, args.email_subject, args.email_to,
+  jcrew = JCrewTracker(args.email_from, args.email_subject, args.email_to,
       args.http_path, args.pushbullet_api_key, args.pushbullet_api_keyfile,
       args.size, args.smtp, args.state_file, args.thumb_size, args.url,
       args.user_agent, args.user_agent_file, args.www_path)

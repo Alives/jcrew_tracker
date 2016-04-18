@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-from jcrew_tracker import jcrew_tracker
+from jcrew_tracker import JCrewTracker
 import unittest
 
 class Test(unittest.TestCase):
   @classmethod
   def setUp(self):
-    self.jt = jcrew_tracker()
+    self.jt = JCrewTracker()
 
   def test_GetChanges_NewItems(self):
     colors = {'a': {'active': True, 'price': 5, 'name': 'a'},

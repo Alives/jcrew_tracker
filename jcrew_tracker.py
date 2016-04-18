@@ -45,10 +45,11 @@ class jcrew_tracker(object):
     self.msg['From'] = email_from
     self.msg['To'] = email_to
     self.msg['Subject'] = email_subject
+    self.path = os.path.dirname(os.path.realpath(__file__))
     self.pushbullet_api_key = pushbullet_api_key
     self.pushbullet_api_keyfile = pushbullet_api_keyfile
     self.size = size
-    self.state_file = state_file
+    self.state_file = os.path.join(self.path, state_file)
     self.url = url
     self.user_agent = user_agent
     self.user_agent_file = user_agent_file
@@ -133,9 +134,9 @@ class jcrew_tracker(object):
       logging.debug('Getting pushbullet api key')
       try:
         with open(self.pushbullet_api_keyfile) as f:
-          return f.read().replace('\n', '')
+          self.pushbullet_api_key = f.read().replace('\n', '')
       except:
-        return ''
+        self.pushbullet_api_key = None
 
   def GetSizes(self, driver):
     logging.info('Getting current sizes')

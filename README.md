@@ -1,4 +1,4 @@
-# jcrew-tracker
+# jcrew_tracker
 A python script that uses selenium and phamtomjs to alert on J.Crew product
 changes.
 
@@ -11,4 +11,4 @@ require the pushbullet.py pip module.
 The script is intended to be run by cron.
 
 ##Sample Email
-![alt text](http://i.imgur.com/xzQz06C.png "Email HTML")
+![alt text](http://i.imgur.com/xzQz06C.png?1 "Email HTML")

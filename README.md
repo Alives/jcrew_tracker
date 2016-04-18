@@ -1,4 +1,4 @@
-# jcrew-tracker
+# jcrew_tracker
 A python script that uses selenium and phamtomjs to alert on J.Crew product
 changes.
 

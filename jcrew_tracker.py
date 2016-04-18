@@ -319,11 +319,11 @@ class JCrewTracker(object):
 
 def Main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('-f', '--email_from', default=jcrew_tracker.EMAIL_USER,
+  parser.add_argument('-f', '--email_from', default=JCrewTracker.EMAIL_USER,
       help='Email address to send email as.')
   parser.add_argument('-s', '--email_subject',
-      default=jcrew_tracker.EMAIL_SUBJECT, help='The email subject.')
-  parser.add_argument('-t', '--email_to', default=jcrew_tracker.EMAIL_USER,
+      default=JCrewTracker.EMAIL_SUBJECT, help='The email subject.')
+  parser.add_argument('-t', '--email_to', default=JCrewTracker.EMAIL_USER,
       help='Email address to send email to.')
   parser.add_argument('--debug', '-d', action='store_true',
       help='Enable debugging logging.')
@@ -339,12 +339,12 @@ def Main():
       help='SMTP server to use for sending emails.')
   parser.add_argument('--state_file', default='jcrew.state',
       help='File to store state in between runs.')
-  parser.add_argument('--thumb_size', default=jcrew_tracker.THUMB_SIZE,
+  parser.add_argument('--thumb_size', default=JCrewTracker.THUMB_SIZE,
       help='Size of thumbnails to display.')
   parser.add_argument('--url', default=('https://www.jcrew.com/mens_category/'
       'polostees/shortsleevepolos/PRDOVR~91918/91918.jsp'),
       help='URL to check against.')
-  parser.add_argument('--user_agent', default=jcrew_tracker.USER_AGENT,
+  parser.add_argument('--user_agent', default=JCrewTracker.USER_AGENT,
       help='User-Agent string to use.')
   parser.add_argument('--user_agent_file', default=('/opt/user_agents.txt'),
       help='File to read user-agent from ($timestamp $string format).')

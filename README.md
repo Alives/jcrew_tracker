@@ -1,17 +1,14 @@
-# jcrew-polo-tracker
-A cronjob to alert me of new jcrew polo sales and styles
+# jcrew-tracker
+A python script that uses selenium and phamtomjs to alert on J.Crew product
+changes.
 
-I wrote this to be alerted on new colors and styles because these are mostly all I wear.
+I wrote this to be alerted on the changes of specific product offerings.
+Changes being any product addtions, price changes, or product removals.
 
-It requires that casperjs be installed from nodejs and bsd-mailx for sending the multipart emails (html).
+It requires that phantomjs and selenium are installed.  Pushbullet notifications
+require the pushbullet.py pip module.
 
-Modify the shell script to match your environment and run it via cron.
+The script is intended to be run by cron.
 
 ##Sample Email
-New:
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![New](http://www.eyyit.com/jcrew/jcrew_polos_cur.png)](http://www.eyyit.com/jcrew/jcrew_polos_cur.png)
-
-Old:
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Old](http://www.eyyit.com/jcrew/jcrew_polos_old.png)](http://www.eyyit.com/jcrew/jcrew_polos_old.png)
+![alt text](http://i.imgur.com/xzQz06C.png "Email HTML")

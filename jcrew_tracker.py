@@ -195,7 +195,10 @@ class jcrew_tracker(object):
 
   def ShirtDiv(self, color, colors, state):
     now = ''
-    diff = colors[color]['price'] - state[color]['price']
+    if color in state:
+      diff = colors[color]['price'] - state[color]['price']
+    else:
+      diff = 0
     h2 = []
     css = {
       'a':     'style="text-decoration:none;color:#000;"',

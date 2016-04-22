@@ -6,31 +6,6 @@ import os
 import urllib2
 
 
-def download_file(headers, path, url):
-  """Download a file using HTTP(S).
-
-  Args:
-      headers: (dict) The headers for the request.
-      path: (string) The filepath to save the data to.
-      url: (string) The URL to download.
-
-  Returns:
-      None.
-  """
-  if os.path.exists(path):
-    return
-  logging.info('Downloading %s', url)
-  opener = urllib2.build_opener()
-  opener.addheaders = []
-  for header, value in headers.iteritems():
-    if value:
-      opener.addheaders.append((header, value))
-  data = opener.open(url).read()
-  with open(path, 'w') as f_img:
-    f_img.write(data)
-  logging.info('Downloaded %d bytes', len(data))
-
-
 class HTMLBuilder(object):
   """Build an HTML document."""
   def __init__(self, headers, http_path, thumb_size, url, www_path):
@@ -42,6 +17,29 @@ class HTMLBuilder(object):
                       (item_code, '%s', thumb_size))
     self.url = url
     self.www_path = www_path
+
+  def download_file(path, url):
+    """Download a file using HTTP(S).
+
+    Args:
+        path: (string) The filepath to save the data to.
+        url: (string) The URL to download.
+
+    Returns:
+        None.
+    """
+    if os.path.exists(path):
+      return
+    logging.info('Downloading %s', url)
+    opener = urllib2.build_opener()
+    opener.addheaders = []
+    for header, value in self.headers.iteritems():
+      if value:
+        opener.addheaders.append((header, value))
+    data = opener.open(url).read()
+    with open(path, 'w') as f_img:
+      f_img.write(data)
+    logging.info('Downloaded %d bytes', len(data))
 
   def item_div(self, color, colors, state):
     """Build a specific item's div with an image, price data, and name.
@@ -73,7 +71,7 @@ class HTMLBuilder(object):
 
     # Download the image.
     path = os.path.join(self.www_path, '%s.jpg' % color)
-    download_file(self.headers, path, self.image_url % color)
+    download_file(path, self.image_url % color)
 
     if color in state:
       diff = colors[color]['price'] - state[color]['price']

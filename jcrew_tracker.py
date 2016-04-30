@@ -16,6 +16,7 @@ EMAIL_SUBJECT = 'J. Crew Polo Changes'
 HTML_FILENAME = 'jcrew.html'
 STATE_FILENAME = 'jcrew.state'
 THUMB_SIZE = 75
+TRIES = 4
 URL = ('https://www.jcrew.com/mens_category/polostees/shortsleevepolos/'
        'PRDOVR~91918/91918.jsp')
 USER_AGENT = ('Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 '
@@ -163,13 +164,13 @@ def main():
     user_agent = get_user_agent(args.user_agent_file)
 
   headers = {'Referer': args.url, 'User-Agent': user_agent}
-  browser = Browser(args.url, user_agent)
+  browser = Browser(user_agent)
   builder = HTMLBuilder(headers, args.http_path, args.thumb_size, args.url,
                         args.www_path)
   state = State(args.state_file)
 
   try:
-    browser.get_url()
+    browser.get_url(args.url, TRIES)
     browser.check_size(args.size)
     browser.update_divs()
     colors = browser.get_colors(args.size)

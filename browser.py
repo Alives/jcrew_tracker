@@ -2,19 +2,24 @@
 """A web browser driver to interface with the external websites."""
 
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
 import logging
 import os
 import signal
 
 
+class ExceededRetries(Exception):
+  """Error from retrying more than the given limit."""
+  pass
+
+
 class Browser(object):
   """The browser driver and supporting methods for interfacing with jcrew.com"""
-  def __init__(self, url, user_agent):
+  def __init__(self, user_agent):
     dcap = dict(DesiredCapabilities.PHANTOMJS)
     dcap["phantomjs.page.settings.userAgent"] = user_agent
     self.driver = webdriver.PhantomJS(
@@ -22,7 +27,6 @@ class Browser(object):
         service_log_path=os.path.devnull)
     self.wait = WebDriverWait(self.driver, 10)
     self.driver.set_window_size(1120, 550)
-    self.url = url
 
   def get_attribute_data(self, tag, name):
     """Get a list of DOM elements that match the html tag and attribute name.
@@ -106,12 +110,24 @@ class Browser(object):
       exit(1)
     logging.info('Size %s is currently available.', size)
 
-  def get_url(self):
-    """Load the url with the browser object and wait for loading to finish."""
-    logging.info('Loading %s', self.url)
-    self.driver.get(self.url)
-    self.wait.until(
-        EC.presence_of_element_located((By.CLASS_NAME, 'color-box')))
+  def get_url(self, url, tries=4):
+    """Load the url with the browser object and wait for loading to finish.
+
+    Args:
+        tries: (int) The number of allowed retries.
+    """
+    logging.info('Loading %s', url)
+    for i in xrange(tries):
+      try:
+        self.driver.get(url)
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'color-box')))
+        return
+      except TimeoutException:
+        logging.error('Timeout trying to get %s. %d of %d tries.',
+                      url, i, tries)
+        continue
+      raise ExceededRetries('Failed to get the resource in %d tries' % tries)
 
   def quit(self):
     """Quit the browser session."""

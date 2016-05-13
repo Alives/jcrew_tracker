@@ -77,7 +77,7 @@ class Browser(object):
     for color in sorted(data):
       self.driver.find_element_by_name(color).click()
       colors[color] = {
-          'name': self.get_node_text('color-name').title(),
+          'name': self.get_node_text('color-name').title().strip(),
           'price': float(self.get_node_text('full-price').split('$')[-1]),
           'active': True}
       logging.info('Active color %s: %s', color, str(colors[color]))

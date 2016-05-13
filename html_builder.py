@@ -13,12 +13,13 @@ class HTMLBuilder(object):
     self.headers = headers
     self.http_path = http_path
     self.thumb_size = thumb_size
-    self.image_url = ('https://i.s-jcrew.com/is/image/jcrew/%s_%s?$pdp_tn%s$' %
-                      (item_code, '%s', thumb_size))
+    store = url.split('://www.')[-1].split('.com/')[0]
+    self.image_url = ('https://i.s-%s.com/is/image/%s/%s_%s?$pdp_tn%s$' %
+                      (store, store, item_code, '%s', thumb_size))
     self.url = url
     self.www_path = www_path
 
-  def download_file(path, url):
+  def download_file(self, path, url):
     """Download a file using HTTP(S).
 
     Args:
@@ -71,7 +72,7 @@ class HTMLBuilder(object):
 
     # Download the image.
     path = os.path.join(self.www_path, '%s.jpg' % color)
-    download_file(path, self.image_url % color)
+    self.download_file(path, self.image_url % color)
 
     if color in state:
       diff = colors[color]['price'] - state[color]['price']

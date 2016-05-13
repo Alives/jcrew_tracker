@@ -53,7 +53,7 @@ def send_email(email_from, email_to, html, smtp, subject):
   msg['From'] = email_from
   msg['To'] = email_to
   msg['Subject'] = subject
-  envelope_to = [msg['To']]
+  envelope_to = [x.strip() for x in msg['To'].split(',')]
   msg.attach(MIMEText(html, 'html'))
   try:
     smtp = smtplib.SMTP(smtp)

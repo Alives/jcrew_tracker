@@ -7,6 +7,7 @@ from state import State
 
 import alert
 import argparse
+import json
 import logging
 import os
 import sys
@@ -77,8 +78,8 @@ def get_user_agent(user_agent_file):
     logging.info('Loading user agent from %s', user_agent_file)
     try:
       with open(user_agent_file) as f_user_agent:
-        for line in f_user_agent:
-          user_agent = line.split(' ', 1)[1].rstrip()
+        ua = json.load(f_user_agent)
+      user_agent = ua['latest']['agent']
     except IOError, e_msg:
       logging.error('Error getting user agent: %s, using default', e_msg)
       user_agent = USER_AGENT
@@ -130,7 +131,7 @@ def parse_args():
   parser.add_argument(
       '--user_agent', default=USER_AGENT, help='User-Agent string to use.')
   parser.add_argument(
-      '--user_agent_file', default='/opt/user_agents.txt',
+      '--user_agent_file', default='/opt/user_agents.json',
       help='File to read user-agent from with "$timestamp $string" format.')
   parser.add_argument('--verbose', '-v', action='store_true')
   parser.add_argument(

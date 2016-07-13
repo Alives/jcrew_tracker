@@ -73,7 +73,12 @@ class Browser(object):
       for (var i = 0; i < color_divs.length; i++) {
         if (! color_divs[i].classList.contains("unavailable")) {
           color = color_divs[i].firstElementChild.id;
-          price = color_divs[i].parentNode.previousElementSibling.innerText;
+          try {
+            price = color_divs[i].parentNode.previousElementSibling.innerText;
+          }
+          catch(err) {
+            price = "$-1.0";
+          }
           prices[color] = price;
         }
       }
@@ -100,11 +105,11 @@ class Browser(object):
     data = self.get_price_map()
     for color, price in data.iteritems():
       self.driver.find_element_by_name(color).click()
-      colors[color] = {
-        'name': self.get_node_text('color-name').title().strip(),
-        'price': float(price.split('$')[-1]),
-        'active': True,
-      }
+      name = self.get_node_text('color-name').title().strip()
+      price = float(price.split('$')[-1])
+      if price == -1.0:
+        price = float(self.get_node_text('full-price').split('$')[-1])
+      colors[color] = {'name': name, 'price': price, 'active': True}
     return colors
 
   def get_node_text(self, class_name):

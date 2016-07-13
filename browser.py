@@ -56,6 +56,30 @@ class Browser(object):
       return attribs;
       """ % (tag, name))
 
+  def get_price_map(self):
+    """Get a map of color names to prices.
+
+    Iterate over each color code and determine it's price, then return the map
+    of color codes to prices.
+
+    Returns: A dict of color name to price value.
+    """
+    logging.debug('Getting color names and prices.')
+    return self.driver.execute_script("""
+      var price_wrapper = document.getElementsByClassName('price-wrapper')[0];
+      var color_divs = price_wrapper.getElementsByClassName('color-box');
+      var prices = {};
+
+      for (var i = 0; i < color_divs.length; i++) {
+        if (! color_divs[i].classList.contains("unavailable")) {
+          color = color_divs[i].firstElementChild.id;
+          price = color_divs[i].parentNode.previousElementSibling.innerText;
+          prices[color] = price;
+        }
+      }
+      return prices;
+      """)
+
   def get_colors(self, size):
     """Get all color data that matches the desired size from the webpage.
 
@@ -73,14 +97,14 @@ class Browser(object):
     self.wait.until(EC.presence_of_element_located((By.ID, 'data-size')))
     self.driver.find_element_by_name(size.upper()).click()
     self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'selected')))
-    data = self.get_attribute_data('div', 'data-color')
-    for color in sorted(data):
+    data = self.get_price_map()
+    for color, price in data.iteritems():
       self.driver.find_element_by_name(color).click()
       colors[color] = {
-          'name': self.get_node_text('color-name').title().strip(),
-          'price': float(self.get_node_text('full-price').split('$')[-1]),
-          'active': True}
-      logging.info('Active color %s: %s', color, str(colors[color]))
+        'name': self.get_node_text('color-name').title().strip(),
+        'price': float(price.split('$')[-1]),
+        'active': True,
+      }
     return colors
 
   def get_node_text(self, class_name):

@@ -144,22 +144,24 @@ def main():
 
   args = parse_args()
 
+  if args.debug:
+    log_level = logging.DEBUG
+  else:
+    log_level = logging.INFO
+
   log_formatter = logging.Formatter(
       '%(levelname).1s%(asctime)s %(lineno)s]  %(message)s', datefmt='%H:%M:%S')
   root_logger = logging.getLogger()
-  root_logger.setLevel(logging.INFO)
+  root_logger.setLevel(log_level)
   file_handler = logging.FileHandler(args.logfile)
   file_handler.setFormatter(log_formatter)
   root_logger.addHandler(file_handler)
 
   if args.verbose:
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(log_level)
     console_handler.setFormatter(log_formatter)
     root_logger.addHandler(console_handler)
-  if args.debug:
-    console_handler.setLevel(logging.DEBUG)
-    root_logger.setLevel(logging.DEBUG)
 
   if args.user_agent == USER_AGENT:
     user_agent = get_user_agent(args.user_agent_file)

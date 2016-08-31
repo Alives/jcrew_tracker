@@ -14,7 +14,6 @@ import sys
 
 
 EMAIL_SUBJECT = 'J. Crew Polo Changes'
-HTML_FILENAME = 'jcrew.html'
 STATE_FILENAME = 'jcrew.state'
 THUMB_SIZE = 75
 TRIES = 4
@@ -104,12 +103,6 @@ def parse_args():
   parser.add_argument(
       '--debug', '-d', action='store_true', help='Enable debugging logging.')
   parser.add_argument(
-      '--html_filename', default=HTML_FILENAME,
-      help='Filename of the html document to write for debugging.')
-  parser.add_argument(
-      '--http_path', required=True,
-      help='http:// path where images can be retrieved.')
-  parser.add_argument(
       '--logfile', default='/var/log/jcrew_tracker.log',
       help='Where to write the logfile.')
   parser.add_argument(
@@ -134,8 +127,6 @@ def parse_args():
       '--user_agent_file', default='/opt/user_agents.json',
       help='File to read user-agent from with "$timestamp $string" format.')
   parser.add_argument('--verbose', '-v', action='store_true')
-  parser.add_argument(
-      '--www_path', default='', help='Local path to store http images.')
   return parser.parse_args()
 
 
@@ -168,8 +159,7 @@ def main():
 
   headers = {'Referer': args.url, 'User-Agent': user_agent}
   browser = Browser(user_agent)
-  builder = HTMLBuilder(headers, args.http_path, args.thumb_size, args.url,
-                        args.www_path)
+  builder = HTMLBuilder(headers, args.thumb_size, args.url)
   state = State(args.state_file)
 
   try:
@@ -183,8 +173,7 @@ def main():
   existing_state = state.get_state()
   changes = get_changes(colors, existing_state)
   if sum([len(v) for v in changes.values()]) > 0:
-    html = builder.write_html(changes, colors, existing_state,
-                              args.html_filename)
+    html = builder.generate_html(changes, colors, existing_state)
     if args.pushbullet_api_key or args.pushbullet_api_keyfile:
       alert.send_alert(args.pushbullet_api_key, args.pushbullet_api_keyfile,
                        args.subject, args.url)

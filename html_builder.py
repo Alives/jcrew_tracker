@@ -8,39 +8,14 @@ import urllib2
 
 class HTMLBuilder(object):
   """Build an HTML document."""
-  def __init__(self, headers, http_path, thumb_size, url, www_path):
+  def __init__(self, headers, thumb_size, url):
     item_code = url.split('/')[-1].split('.')[0]
     self.headers = headers
-    self.http_path = http_path
     self.thumb_size = thumb_size
     store = url.split('://www.')[-1].split('.com/')[0]
     self.image_url = ('https://i.s-%s.com/is/image/%s/%s_%s?$pdp_tn%s$' %
                       (store, store, item_code, '%s', thumb_size))
     self.url = url
-    self.www_path = www_path
-
-  def download_file(self, path, url):
-    """Download a file using HTTP(S).
-
-    Args:
-        path: (string) The filepath to save the data to.
-        url: (string) The URL to download.
-
-    Returns:
-        None.
-    """
-    if os.path.exists(path):
-      return
-    logging.info('Downloading %s', url)
-    opener = urllib2.build_opener()
-    opener.addheaders = []
-    for header, value in self.headers.iteritems():
-      if value:
-        opener.addheaders.append((header, value))
-    data = opener.open(url).read()
-    with open(path, 'w') as f_img:
-      f_img.write(data)
-    logging.info('Downloaded %d bytes', len(data))
 
   def item_div(self, color, colors, state):
     """Build a specific item's div with an image, price data, and name.
@@ -66,13 +41,9 @@ class HTMLBuilder(object):
     html = [
         '%s<div %s>' % ((' ' * 6), css['div']),
         '%s<a href="%s" %s>' % ((' ' * 8), self.url, css['a']),
-        ('%s<img src="%s/%s.jpg" height="%s" width="%s" />' %
-         ((' ' * 10), self.http_path, color, self.thumb_size,
+        ('%s<img src="%s" height="%s" width="%s" />' %
+         ((' ' * 10), self.image_url % color, self.thumb_size,
           self.thumb_size))]
-
-    # Download the image.
-    path = os.path.join(self.www_path, '%s.jpg' % color)
-    self.download_file(path, self.image_url % color)
 
     if color in state:
       diff = colors[color]['price'] - state[color]['price']
@@ -101,7 +72,7 @@ class HTMLBuilder(object):
 
     return '\n'.join(html)
 
-  def write_html(self, changes, colors, state, html_filename='jcrew.html'):
+  def generate_html(self, changes, colors, state, html_filename='jcrew.html'):
     """Write the entire HTML document.
 
     Args:
@@ -136,8 +107,4 @@ class HTMLBuilder(object):
       html.append('%s</div>' % (' ' * 4))
     html.extend(['%s</body>' % (' ' * 2), '</html>', ''])
     html_text = '\n'.join(html)
-    path = os.path.join(self.www_path, html_filename)
-    with open(path, 'w') as f_html:
-      f_html.write(html_text)
-    logging.info('Wrote HTML file')
     return html_text

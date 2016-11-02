@@ -3,7 +3,6 @@
 
 import logging
 import os
-import urllib2
 
 
 class HTMLBuilder(object):

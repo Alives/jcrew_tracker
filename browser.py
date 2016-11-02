@@ -7,9 +7,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import httplib
 import logging
 import os
+import socket
 import signal
+import urllib2
 
 
 class ExceededRetries(Exception):
@@ -46,15 +49,22 @@ class Browser(object):
         A list of strings of the data from the name attributes.
     """
     logging.debug('Getting attributes for tag: %s name: %s', tag, name)
-    return self.driver.execute_script("""
-      var elements = document.getElementsByTagName("%s");
-      var attribs = [];
-      for (var i = 0; i < elements.length; i++) {
-        item = elements[i].attributes.getNamedItem("%s");
-        if (item) { attribs.push(item.nodeValue); }
-      }
-      return attribs;
-      """ % (tag, name))
+    for _ in xrange(3):
+      try:
+        return self.driver.execute_script("""
+          var elements = document.getElementsByTagName("%s");
+          var attribs = [];
+          for (var i = 0; i < elements.length; i++) {
+            item = elements[i].attributes.getNamedItem("%s");
+            if (item) { attribs.push(item.nodeValue); }
+          }
+          return attribs;
+          """ % (tag, name))
+      except urllib2.URLError, e:
+        logging.error('Error getting attributes for tag: %s name: %s', tag, name)
+        continue
+    logging.error('Couldn\'t get attributes for tag: %s name: %s', tag, name)
+    exit(1)
 
   def get_price_map(self):
     """Get a map of color names to prices.
@@ -155,6 +165,13 @@ class Browser(object):
       except TimeoutException:
         logging.error('Timeout trying to get %s. %d of %d tries.',
                       url, i, tries)
+        continue
+      except httplib.BadStatusLine:
+        logging.error('Bad status line trying to get %s. %d of %d tries.',
+                      url, i, tries)
+        continue
+      except (socket.error, urllib2.URLError), e:
+        logging.error('Error opening url: %s', e)
         continue
       raise ExceededRetries('Failed to get the resource in %d tries' % tries)
 

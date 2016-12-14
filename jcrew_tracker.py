@@ -103,6 +103,9 @@ def parse_args():
   parser.add_argument(
       '--debug', '-d', action='store_true', help='Enable debugging logging.')
   parser.add_argument(
+      '--ignore', '-i', nargs='*', help='Ignore space separated color codes.',
+      default=[])
+  parser.add_argument(
       '--logfile', default='/var/log/jcrew_tracker.log',
       help='Where to write the logfile.')
   parser.add_argument(
@@ -163,7 +166,9 @@ def main():
   state = State(args.state_file)
 
   try:
-    browser.get_url(args.url, TRIES)
+    if not browser.get_url(args.url, TRIES):
+      logging.error('Could not load %s Exiting.', args.url)
+      exit(1)
     browser.check_size(args.size)
     browser.update_divs()
     colors = browser.get_colors(args.size)
@@ -172,6 +177,15 @@ def main():
 
   existing_state = state.get_state()
   changes = get_changes(colors, existing_state)
+
+  # Remove ignored colors so they aren't alerted on.
+  for color_code in args.ignore:
+    logging.info('Ignoring alerts for color code %s.', color_code)
+    for k in changes.keys():
+      if color_code in changes[k]:
+        changes[k].remove(color_code)
+        logging.info('Removed ignored color code %s from alerts.', color_code)
+
   if sum([len(v) for v in changes.values()]) > 0:
     html = builder.generate_html(changes, colors, existing_state)
     if args.pushbullet_api_key or args.pushbullet_api_keyfile:
@@ -183,6 +197,7 @@ def main():
   else:
     logging.info('No changes to alert on.')
   state.write_state(colors)
+  logging.info('Finished.')
 
 
 if __name__ == '__main__':

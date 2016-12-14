@@ -15,11 +15,6 @@ import signal
 import urllib2
 
 
-class ExceededRetries(Exception):
-  """Error from retrying more than the given limit."""
-  pass
-
-
 class Browser(object):
   """The browser driver and supporting methods for interfacing with jcrew.com"""
   def __init__(self, user_agent):
@@ -154,26 +149,29 @@ class Browser(object):
 
     Args:
         tries: (int) The number of allowed retries.
+
+    Returns:
+        True if successful, False if not.
     """
     logging.info('Loading %s', url)
-    for i in xrange(tries):
+    for i in xrange(1, tries + 1):
       try:
         self.driver.get(url)
         self.wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, 'color-box')))
-        return
+        return True
       except TimeoutException:
-        logging.error('Timeout trying to get %s. %d of %d tries.',
+        logging.error('Timeout trying to get %s %d of %d tries.',
                       url, i, tries)
         continue
       except httplib.BadStatusLine:
-        logging.error('Bad status line trying to get %s. %d of %d tries.',
+        logging.error('Bad status line trying to get %s %d of %d tries.',
                       url, i, tries)
         continue
       except (socket.error, urllib2.URLError), e:
         logging.error('Error opening url: %s', e)
         continue
-      raise ExceededRetries('Failed to get the resource in %d tries' % tries)
+    return False
 
   def quit(self):
     """Quit the browser session."""

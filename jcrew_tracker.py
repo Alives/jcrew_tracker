@@ -94,7 +94,7 @@ def item_div(color, data, state):
   html.extend(price_html)
   html.append('%s<p %s>%s</p>' % ((' ' * 10), css['color'], color))
   if 'quantity' in data[color]:
-    html.append('%s<p %s># Avail: %s</p>' % ((' ' * 10), css['color'],
+    html.append('%s<p %s>Quantity: %s</p>' % ((' ' * 10), css['color'],
                                              data[color]['quantity']))
   html.extend([
       '%s<p %s>%s</p>' % ((' ' * 10), css['name'],

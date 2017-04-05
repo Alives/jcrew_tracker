@@ -168,17 +168,17 @@ def get_changes(colors, state):
   """
   changes = {'New Items': [], 'Removed Items': [], 'Price Changes': []}
   for color, data in sorted(colors.iteritems()):
-    if color in state and state[color]['active']:
+    if colors[color]['active'] and color in state and state[color]['active']:
       logging.info('Color %s (%s) is already known to be active', color,
                    data['name'])
-    else:
+    elif colors[color]['active']:
       if color in state and not state[color]['active']:
         logging.info('Color %s (%s) is now active', color, data['name'])
       elif color not in state:
         logging.info('Color %s (%s) is new', color, data['name'])
       changes['New Items'].append(color)
   for color, data in sorted(state.iteritems()):
-    if color not in colors:
+    if color not in colors or not colors[color]['active']:
       if not data['active']:
         logging.debug('Color %s (%s) already inactive', color, data['name'])
         continue

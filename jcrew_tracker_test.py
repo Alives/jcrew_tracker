@@ -20,7 +20,8 @@ class Test(unittest.TestCase):
       changes)
 
   def test_get_changes_RemovedItems(self):
-    colors = {'a': {'active': True, 'price': 5, 'name': 'a'}}
+    colors = {'a': {'active': True, 'price': 5, 'name': 'a'},
+              'b': {'active': False, 'price': 5, 'name': 'b'}}
     state = {'a': {'active': True, 'price': 5, 'name': 'a'},
              'b': {'active': True, 'price': 5, 'name': 'b'},
              'c': {'active': False, 'price': 5, 'name': 'c'}}

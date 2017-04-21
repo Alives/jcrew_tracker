@@ -140,6 +140,8 @@ def generate_html(changes, data, state):
   html.extend(['%s</body>' % (' ' * 2), '</html>', ''])
   html_text = '\n'.join(html)
   return html_text
+
+
 def send_email(email_from, email_to, html):
   logging.info('Sending email alert')
   msg = MIMEMultipart()

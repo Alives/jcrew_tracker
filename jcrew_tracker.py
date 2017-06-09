@@ -261,6 +261,8 @@ def build_sku_list(product_data, inventory_data, size):
   data = {}
   inventory = inventory_data['inventory']
   for sku, details in product_data['productDetails']['skus'].iteritems():
+    if sku not in inventory:
+      continue
     if details['size'] == size.upper():
       color = details['colorCode']
       data[color] = {

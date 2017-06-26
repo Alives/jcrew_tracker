@@ -242,8 +242,15 @@ def get_url(url, user_agent, referer=None):
   if not referer:
     referer = url
   headers = {'Referer': referer, 'User-Agent': user_agent}
-  response = requests.get(url, headers=headers)
-  return response.text
+  for i in xrange(4):
+    try:
+      response = requests.get(url, headers=headers)
+      return response.text
+    except requests.exceptions.ConnectionError:
+      logging.error('Connection Error.')
+      pass
+  logging.error('Connection retries exhausted. Exiting.'
+  exit(1)
 
 
 def extract_json_from_html(html):

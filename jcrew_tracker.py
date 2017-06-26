@@ -249,7 +249,7 @@ def get_url(url, user_agent, referer=None):
     except requests.exceptions.ConnectionError:
       logging.error('Connection Error.')
       pass
-  logging.error('Connection retries exhausted. Exiting.'
+  logging.error('Connection retries exhausted. Exiting.')
   exit(1)
 
 

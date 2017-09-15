@@ -229,7 +229,7 @@ def parse_args():
       '--ignore', '-i', nargs='*', help='Ignore space separated color codes.',
       default=[])
   parser.add_argument(
-      '--logfile', default='/var/log/jcrew_tracker.log',
+      '--logfile', default='/var/log/cron/jcrew_tracker.log',
       help='Where to write the logfile.')
   parser.add_argument(
       '--size', default='large', help='Size of clothing to look for.')

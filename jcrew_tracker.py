@@ -5,7 +5,6 @@ import argparse
 import json
 import logging
 import os
-import re
 import smtplib
 import sys
 
@@ -18,6 +17,8 @@ import requests
 INVENTORY_URL = 'https://www.jcrew.com/data/v1/us/products/inventory/91918'
 ITEM_URL = ('https://www.jcrew.com/mens_category/polostees/shortsleevepolos/'
             'PRDOVR~91918/91918.jsp')
+PRODUCT_DATA_URL = ('https://www.jcrew.com/data/v1/US/3446/products/91918/c/'
+                    'mens_category/polostees/shortsleevepolos')
 USER_AGENT = ('Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36')
 
@@ -224,8 +225,6 @@ def parse_args():
   parser.add_argument(
       '-t', '--email_to', required=True, help='Email address to send email to.')
   parser.add_argument(
-      '--debug', '-d', action='store_true', help='Enable debugging logging.')
-  parser.add_argument(
       '--ignore', '-i', nargs='*', help='Ignore space separated color codes.',
       default=[])
   parser.add_argument(
@@ -238,60 +237,45 @@ def parse_args():
 
 
 def get_url(url, user_agent, referer=None):
+  """Get contents from a given URL."""
   logging.info('Loading %s', url)
   if not referer:
     referer = url
   headers = {'Referer': referer, 'User-Agent': user_agent}
-  for i in xrange(4):
+  for _ in xrange(4):
     try:
       response = requests.get(url, headers=headers)
       return response.text
     except requests.exceptions.ConnectionError:
       logging.error('Connection Error.')
-      pass
   logging.error('Connection retries exhausted. Exiting.')
   exit(1)
 
 
-def extract_json_from_html(html):
-  logging.info('Extracting JSON.')
-  try:
-    json_str = re.findall(r'^\s+var pdpJSON = ({.*});$', html, re.M)[0]
-  except IndexError:
-    logging.error('Unable to find json in html.')
-    exit(1)
-  return json.loads(json_str)
-
-
-def build_sku_list(product_data, inventory_data, size):
-  """Combine product and inventory data by sku."""
+def get_product_data(size):
+  """Get JSON info and extract relevant data."""
   data = {}
-  inventory = inventory_data['inventory']
-  for sku, details in product_data['productDetails']['skus'].iteritems():
-    if sku not in inventory:
-      continue
-    if details['size'] == size.upper():
-      color = details['colorCode']
-      data[color] = {
-          'name': details['colorName'],
-          'price': float(details['price']['amount'])
-      }
-      if 'inStock' in inventory[sku]:
-        if not inventory[sku]['inStock']:
-          data[color]['active'] = False
-      else:
-        data[color]['active'] = True
-        data[color]['quantity'] = inventory[sku]['quantity']
-  return data
-
-
-def get_jcrew_data(size):
   user_agent = get_user_agent('/opt/user_agents.json')
-  html = get_url(ITEM_URL, user_agent)
-  product_data = extract_json_from_html(html)
-  html = get_url(INVENTORY_URL, user_agent, referer=ITEM_URL)
-  inventory_data = json.loads(html)
-  return build_sku_list(product_data, inventory_data, size)
+  content = get_url(INVENTORY_URL, user_agent, referer=ITEM_URL)
+  inventory_data = json.loads(content)
+  content = get_url(PRODUCT_DATA_URL, user_agent, referer=ITEM_URL)
+  product_data = json.loads(content)
+  for color, sku in product_data['sizesMap'][size.upper()].iteritems():
+    p_d = product_data['skus'][sku]
+    i_d = inventory_data['inventory'][sku]
+    data[color] = {'name': p_d['colorName']}
+    listprice = float(p_d['listPrice']['amount'])
+    price = float(p_d['price']['amount'])
+    if listprice > price:
+      data[color]['price'] = price
+    else:
+      data[color]['price'] = listprice
+    if 'quantity' in i_d.keys():
+      data[color]['quantity'] = i_d['quantity']
+      data[color]['active'] = True
+    else:
+      data[color]['active'] = False
+  return data
 
 
 def remove_ignored_colors(changes, ignore):
@@ -305,35 +289,34 @@ def remove_ignored_colors(changes, ignore):
   return changes
 
 
-def setup_logging(debug, logfile, verbose):
+def setup_logging(logfile, verbose):
   """Setup the logging system."""
-  if debug:
+  if verbose:
     log_level = logging.DEBUG
   else:
-    log_level = logging.INFO
+    log_level = logging.ERROR
 
   log_formatter = logging.Formatter(
       '%(levelname).1s%(asctime)s %(lineno)s]  %(message)s', datefmt='%H:%M:%S')
   root_logger = logging.getLogger()
-  root_logger.setLevel(log_level)
+  root_logger.setLevel(logging.INFO)
   file_handler = logging.FileHandler(logfile)
   file_handler.setFormatter(log_formatter)
   root_logger.addHandler(file_handler)
 
-  if verbose:
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(log_level)
-    console_handler.setFormatter(log_formatter)
-    root_logger.addHandler(console_handler)
+  console_handler = logging.StreamHandler(sys.stdout)
+  console_handler.setLevel(log_level)
+  console_handler.setFormatter(log_formatter)
+  root_logger.addHandler(console_handler)
 
 
 def main():
   """Main."""
   args = parse_args()
-  setup_logging(args.debug, args.logfile, args.verbose)
+  setup_logging(args.logfile, args.verbose)
   state = State('jcrew.state')
 
-  data = get_jcrew_data(args.size)
+  data = get_product_data(args.size)
   if not data:
     logging.error('Nothing in size %s available.', args.size)
   existing_state = state.get_state()

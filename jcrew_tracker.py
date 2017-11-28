@@ -2,11 +2,14 @@
 """Check J. Crew items for changes."""
 
 import argparse
+import datetime
 import json
 import logging
 import os
+import socket
 import smtplib
 import sys
+import time
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -225,6 +228,8 @@ def parse_args():
   parser.add_argument(
       '-t', '--email_to', required=True, help='Email address to send email to.')
   parser.add_argument(
+      '--graphite', '-g', action='store_true', help='Also write to graphite.')
+  parser.add_argument(
       '--ignore', '-i', nargs='*', help='Ignore space separated color codes.',
       default=[])
   parser.add_argument(
@@ -249,15 +254,25 @@ def get_url(url, user_agent, referer=None):
     except requests.exceptions.ConnectionError:
       logging.error('Connection Error.')
   logging.error('Connection retries exhausted. Exiting.')
-  exit(1)
+  sys.exit(1)
 
 
 def get_product_data(size):
   """Get JSON info and extract relevant data."""
   data = {}
+  inventory_data = ''
   user_agent = get_user_agent('/opt/user_agents.json')
-  content = get_url(INVENTORY_URL, user_agent, referer=ITEM_URL)
-  inventory_data = json.loads(content)
+  for _ in xrange(5):
+    content = get_url(INVENTORY_URL, user_agent, referer=ITEM_URL)
+    try:
+      inventory_data = json.loads(content)
+    except ValueError:
+      time.sleep(5)
+      continue
+    break
+  if not inventory_data:
+    logging.error('Couldn\'t get inventory data after 4 tries.')
+    sys.exit(1)
   content = get_url(PRODUCT_DATA_URL, user_agent, referer=ITEM_URL)
   product_data = json.loads(content)
   for color, sku in product_data['sizesMap'][size.upper()].iteritems():
@@ -287,6 +302,25 @@ def remove_ignored_colors(changes, ignore):
         changes[k].remove(color_code)
         logging.info('Removed ignored color code %s from alerts.', color_code)
   return changes
+
+
+def write_graphite(data, prefix='jcrew_quantity', server='127.0.0.1',
+                   port=2003):
+  """Write quantity data to graphite for monitoring."""
+  entries = []
+  now = int(datetime.datetime.now().strftime('%s'))
+  sock = socket.socket()
+  sock.settimeout(5)
+  sock.connect((server, port))
+  for color, info in data.iteritems():
+    if not info['active']:
+      continue
+    color_name = '%s_%s' % (color, info['name'].replace(' ', '_').title())
+    msg = '%s.%s %d %d.' % (prefix, color_name, info['quantity'], now)
+    entries.append(msg)
+    logging.info('Sending "%s" to %s:%d', msg, server, port)
+  sock.sendall('\n'.join(entries) + '\n')
+  sock.close()
 
 
 def setup_logging(logfile, verbose):
@@ -319,6 +353,8 @@ def main():
   data = get_product_data(args.size)
   if not data:
     logging.error('Nothing in size %s available.', args.size)
+  if args.graphite:
+    write_graphite(data)
   existing_state = state.get_state()
   changes = get_changes(data, existing_state)
 

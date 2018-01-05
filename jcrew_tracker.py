@@ -276,8 +276,16 @@ def get_product_data(size):
   content = get_url(PRODUCT_DATA_URL, user_agent, referer=ITEM_URL)
   product_data = json.loads(content)
   for color, sku in product_data['sizesMap'][size.upper()].iteritems():
-    p_d = product_data['skus'][sku]
-    i_d = inventory_data['inventory'][sku]
+    try:
+      p_d = product_data['skus'][sku]
+    except KeyError:
+      logging.debug('sku %s (color %s) not in product_data', sku, color)
+      continue
+    try:
+      i_d = inventory_data['inventory'][sku]
+    except KeyError:
+      logging.debug('sku %s (color %s) not in inventory_data', sku, color)
+      i_d = {}
     data[color] = {'name': p_d['colorName']}
     listprice = float(p_d['listPrice']['amount'])
     price = float(p_d['price']['amount'])

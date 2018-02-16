@@ -247,14 +247,12 @@ def get_url(url, user_agent, referer=None):
   if not referer:
     referer = url
   headers = {'Referer': referer, 'User-Agent': user_agent}
-  for _ in xrange(4):
-    try:
-      response = requests.get(url, headers=headers)
-      return response.text
-    except requests.exceptions.ConnectionError:
-      logging.error('Connection Error.')
-  logging.error('Connection retries exhausted. Exiting.')
-  sys.exit(1)
+  try:
+    response = requests.get(url, headers=headers)
+    return response.text
+  except requests.exceptions.ConnectionError:
+    logging.debug('Connection Error.')
+  return ''
 
 
 def get_product_data(size):
@@ -271,7 +269,7 @@ def get_product_data(size):
       continue
     break
   if not inventory_data:
-    logging.error('Couldn\'t get inventory data after 4 tries.')
+    logging.debug('Couldn\'t get inventory data after 4 tries.')
     sys.exit(1)
   content = get_url(PRODUCT_DATA_URL, user_agent, referer=ITEM_URL)
   product_data = json.loads(content)
@@ -357,6 +355,11 @@ def main():
   args = parse_args()
   setup_logging(args.logfile, args.verbose)
   state = State('jcrew.state')
+  now = int(datetime.datetime.now().strftime('%s'))
+  state_age = os.path.getmtime('jcrew.state')
+  if (now - state_age) > (60 * 60 * 24):
+    logging.error('jcrew.state was modified over 24 hrs ago. '
+                  'Something is wrong.')
 
   data = get_product_data(args.size)
   if not data:

@@ -356,7 +356,7 @@ def main():
   setup_logging(args.logfile, args.verbose)
   state = State('jcrew.state')
   now = int(datetime.datetime.now().strftime('%s'))
-  state_age = os.path.getmtime('jcrew.state')
+  state_age = os.path.getmtime(state.state_file)
   if (now - state_age) > (60 * 60 * 24):
     logging.error('jcrew.state was modified over 24 hrs ago. '
                   'Something is wrong.')

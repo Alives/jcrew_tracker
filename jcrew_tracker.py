@@ -317,15 +317,15 @@ def write_graphite(data, prefix='jcrew_quantity', server='127.0.0.1',
   now = int(datetime.datetime.now().strftime('%s'))
   sock = socket.socket()
   sock.settimeout(5)
+  for color, info in data.iteritems():
+    if not info['active']:
+      continue
+    color_name = '%s_%s' % (color, info['name'].replace(' ', '_').title())
+    msg = '%s.%s %d %d.' % (prefix, color_name, info['quantity'], now)
+    entries.append(msg)
+    logging.info('Sending "%s" to %s:%d', msg, server, port)
   try:
     sock.connect((server, port))
-    for color, info in data.iteritems():
-      if not info['active']:
-        continue
-      color_name = '%s_%s' % (color, info['name'].replace(' ', '_').title())
-      msg = '%s.%s %d %d.' % (prefix, color_name, info['quantity'], now)
-      entries.append(msg)
-      logging.info('Sending "%s" to %s:%d', msg, server, port)
     sock.sendall('\n'.join(entries) + '\n')
   except socket.error as error:
     logging.error('Error sending data to graphite: %s', error)

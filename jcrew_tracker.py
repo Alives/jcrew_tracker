@@ -28,11 +28,12 @@ USER_AGENT = ('Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 '
 
 class State(object):
   """Read a json file and save current state as json files."""
-  def __init__(self, state_file):
+  def __init__(self, state_file, state_type={}):
     self.path = os.path.dirname(os.path.realpath(__file__))
     self.state_file = os.path.join(self.path, state_file)
+    self.state_type = state_type
 
-  def get_state(self):
+  def load_state(self):
     """Read an object from a json encoded file."""
     logging.info('Loading state from %s', self.state_file)
     try:
@@ -40,11 +41,11 @@ class State(object):
         return json.load(f_state)
     except IOError, msg:
       logging.error('Could not read %s: %s', self.state_file, msg)
-      return {}
+      return self.state_type
 
   def write_state(self, state):
     """Write an object to a json file."""
-    logging.info('Saving state')
+    logging.info('Writing state to %s', self.state_file)
     try:
       with open(self.state_file, 'w') as f_state:
         f_state.write(json.dumps(state, indent=2, sort_keys=True) + '\n')
@@ -313,7 +314,10 @@ def remove_ignored_colors(changes, ignore):
 def write_graphite(data, prefix='jcrew_quantity', server='127.0.0.1',
                    port=2003):
   """Write quantity data to graphite for monitoring."""
-  entries = []
+  state = State('graphite_data.json', state_type=[])
+  entries = state.load_state()
+  logging.info('Previously unwritten graphite data is %d entries long.',
+               len(entries))
   now = int(datetime.datetime.now().strftime('%s'))
   sock = socket.socket()
   sock.settimeout(5)
@@ -323,14 +327,17 @@ def write_graphite(data, prefix='jcrew_quantity', server='127.0.0.1',
     color_name = '%s_%s' % (color, info['name'].replace(' ', '_').title())
     msg = '%s.%s %d %d.' % (prefix, color_name, info['quantity'], now)
     entries.append(msg)
+  for msg in entries:
     logging.info('Sending "%s" to %s:%d', msg, server, port)
   try:
     sock.connect((server, port))
     sock.sendall('\n'.join(entries) + '\n')
+    sock.close()
+    entries = []
   except socket.error as error:
     logging.error('Error sending data to graphite: %s', error)
-  finally:
-    sock.close()
+    logging.info('Queueing data for later writing...')
+  state.write_state(entries)
 
 
 def setup_logging(logfile, verbose):
@@ -358,19 +365,19 @@ def main():
   """Main."""
   args = parse_args()
   setup_logging(args.logfile, args.verbose)
-  state = State('jcrew.state')
+  state = State('jcrew_state.json')
   now = int(datetime.datetime.now().strftime('%s'))
   state_age = os.path.getmtime(state.state_file)
   if (now - state_age) > (60 * 60 * 24):
-    logging.error('jcrew.state was modified over 24 hrs ago. '
-                  'Something is wrong.')
+    logging.error('%s was modified over 24 hrs ago. Something is wrong.',
+                  state.state_file)
 
   data = get_product_data(args.size)
   if not data:
     logging.error('Nothing in size %s available.', args.size)
   if args.graphite:
     write_graphite(data)
-  existing_state = state.get_state()
+  existing_state = state.load_state()
   changes = get_changes(data, existing_state)
 
   changes = remove_ignored_colors(changes, args.ignore)

@@ -319,8 +319,6 @@ def write_graphite(data, prefix='jcrew_quantity', server='127.0.0.1',
   logging.info('Previously unwritten graphite data is %d entries long.',
                len(entries))
   now = int(datetime.datetime.now().strftime('%s'))
-  sock = socket.socket()
-  sock.settimeout(5)
   for color, info in data.iteritems():
     if not info['active']:
       continue
@@ -330,6 +328,8 @@ def write_graphite(data, prefix='jcrew_quantity', server='127.0.0.1',
   for msg in entries:
     logging.info('Sending "%s" to %s:%d', msg, server, port)
   try:
+    sock = socket.socket()
+    sock.settimeout(5)
     sock.connect((server, port))
     sock.sendall('\n'.join(entries) + '\n')
     sock.close()

@@ -272,8 +272,16 @@ def get_product_data(size):
   if not inventory_data:
     logging.debug('Couldn\'t get inventory data after 4 tries.')
     sys.exit(1)
-  content = get_url(PRODUCT_DATA_URL, user_agent, referer=ITEM_URL)
-  product_data = json.loads(content)
+  for _ in xrange(5):
+    content = get_url(PRODUCT_DATA_URL, user_agent, referer=ITEM_URL)
+    product_data = json.loads(content)
+    if 'sizesMap' not in product_data:
+      time.sleep(5)
+      continue
+    break
+  if not product_data:
+    logging.debug('Couldn\'t get product data after 4 tries.')
+    sys.exit(1)
   for color, sku in product_data['sizesMap'][size.upper()].iteritems():
     try:
       p_d = product_data['skus'][sku]

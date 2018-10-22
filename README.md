@@ -10,18 +10,18 @@ require the pushbullet.py pip module.
 
 The script is intended to be run by cron.
 
-##Sample Email
+## Sample Email
 ![alt text](http://i.imgur.com/xzQz06C.png?1 "Email HTML")
 
-##How to run it
-###Default mode (Large Polos):
+## How to run it
+### Default mode (Large Polos):
 ```bash
 python jcrew_tracker.py \
   -f jcrew_tracker@your_domain.com \
   -t your_email@your_domain.com
 ```
   
-###For non-polo or non-jcrew products:
+### For non-polo or non-jcrew products:
 ```bash
 python jcrew_tracker.py \
   --logfile /tmp/madewell_tracker.log \
